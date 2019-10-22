@@ -1,0 +1,22 @@
+#!/bin/sh
+if [ "$1" == "RECEIVED" ]; then
+    from=`grep "From:" $2 | awk -F ': ' '{printf $2}'`
+    #sent=`grep "Sent:" $2 | awk -F ': ' '{printf $2}'`
+    #received=`grep "Received:" $2 | awk -F ': ' '{printf $2}'`
+    alphabet=`grep "Alphabet:" $2 | awk -F ': ' '{printf $2}'`
+
+    if [ "$alphabet" = "UCS2" ]; then
+        content=$(sed -e '1,/^$/ d' < "$2" | iconv -f UNICODEBIG -t UTF-8)
+    else
+        content=$(sed -e '1,/^$/ d' < "$2")
+    fi
+
+  text=$(cat <<EOF
+${content}
+发件人： ${from}
+该信息由GL-MiFi自动转发，如非重要信息请忽略!
+EOF
+)
+
+    sendsms +86***** "${text}"
+fi
